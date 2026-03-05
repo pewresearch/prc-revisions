@@ -126,12 +126,43 @@ class Rest_API {
 	}
 
 	/**
-	 * Permission check for reading public revisions (public endpoint).
+	 * Permission check for reading public revisions.
+	 *
+	 * Published posts are readable by anyone. Draft posts are readable only
+	 * by users who can edit the post, to avoid leaking the existence of
+	 * unpublished content or author/timing metadata to anonymous callers.
 	 *
 	 * @param WP_REST_Request $request The request object.
-	 * @return bool
+	 * @return bool|WP_Error
 	 */
 	public function read_permissions_check( $request ) {
+		$post_id = $request->get_param( 'post_id' );
+		$post    = get_post( $post_id );
+
+		if ( ! $post ) {
+			return new WP_Error(
+				'rest_not_found',
+				__( 'Post not found.', 'prc-revisions' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( ! post_type_supports( $post->post_type, 'prc-revisions' ) ) {
+			return new WP_Error(
+				'rest_post_type_not_supported',
+				__( 'This post type does not support revisions features.', 'prc-revisions' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		if ( 'publish' !== $post->post_status && ! current_user_can( 'edit_post', $post_id ) ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'You do not have permission to view revisions for this post.', 'prc-revisions' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		return true;
 	}
 

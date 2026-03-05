@@ -96,12 +96,15 @@ class Future_Revisions {
 				$post_type,
 				self::FORK_STATUS_META,
 				array(
-					'single'        => true,
-					'type'          => 'string',
-					'description'   => 'Fork status: draft, pending_review, or merged.',
-					'default'       => '',
-					'show_in_rest'  => true,
-					'auth_callback' => function () {
+					'single'            => true,
+					'type'              => 'string',
+					'description'       => 'Fork status: draft, pending_review, or merged.',
+					'default'           => '',
+					'show_in_rest'      => true,
+					'sanitize_callback' => function ( $value ) {
+						return in_array( $value, array( 'draft', 'pending_review', 'merged' ), true ) ? $value : '';
+					},
+					'auth_callback'     => function () {
 						return current_user_can( 'edit_posts' );
 					},
 				)
