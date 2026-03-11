@@ -63,7 +63,6 @@ class Future_Revisions {
 	 */
 	public function __construct( $loader ) {
 		$loader->add_action( 'init', $this, 'register_meta' );
-		$loader->add_filter( 'prc_platform_pub_listing_default_args', $this, 'exclude_forks_from_pub_listing' );
 		$loader->add_action( 'prc_platform_on_publish', $this, 'handle_fork_publish', 5, 1 );
 		$loader->add_action( 'before_delete_post', $this, 'cleanup_fork_reference' );
 		$loader->add_action( 'wp_trash_post', $this, 'cleanup_fork_reference' );
@@ -125,25 +124,6 @@ class Future_Revisions {
 				)
 			);
 		}
-	}
-
-	/**
-	 * Exclude fork posts from publication listing queries.
-	 *
-	 * @hook prc_platform_pub_listing_default_args
-	 *
-	 * @param array $query_args Query arguments.
-	 * @return array Modified query arguments.
-	 */
-	public function exclude_forks_from_pub_listing( $query_args ) {
-		if ( ! isset( $query_args['meta_query'] ) ) {
-			$query_args['meta_query'] = array();
-		}
-		$query_args['meta_query'][] = array(
-			'key'     => self::FORK_PARENT_META,
-			'compare' => 'NOT EXISTS',
-		);
-		return $query_args;
 	}
 
 	/**
