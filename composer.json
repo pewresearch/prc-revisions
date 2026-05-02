@@ -1,0 +1,29 @@
+{
+	"name": "pewresearch/prc-revisions",
+	"description": "Public revision versioning for the PRC Platform.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=8.2",
+		"automattic/jetpack-autoloader": "^5.0",
+		"prc/block-utils": "^1.0"
+	},
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true,
+			"automattic/jetpack-autoloader": true
+		},
+		"github-protocols": [
+			"https"
+		],
+		"platform": {
+			"php": "8.4.0"
+		}
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/pewresearch/prc-block-utils"
+		}
+	]
+}

@@ -98,8 +98,8 @@ class Plugin {
 				);
 			}
 
-			if ( function_exists( '\PRC\Platform\Block_Utils\load_blocks' ) ) {
-				$blocks_loaded = \PRC\Platform\Block_Utils\load_blocks( PRC_REVISIONS_DIR );
+			if ( function_exists( '\PRC\BlockUtils\load_blocks' ) ) {
+				$blocks_loaded = \PRC\BlockUtils\load_blocks( PRC_REVISIONS_DIR );
 				if ( ! is_wp_error( $blocks_loaded ) ) {
 					new Revision_List( $this->get_loader() );
 				}

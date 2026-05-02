@@ -19,7 +19,7 @@
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       prc-revisions
- * Requires Plugins:  prc-platform-core
+ * Requires Plugins:  prc-scripts, prc-post-publish-pipeline
  */
 
 namespace PRC\Platform\Revisions;
@@ -32,10 +32,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! defined( 'DEFAULT_TECHNICAL_CONTACT' ) ) {
+	define( 'DEFAULT_TECHNICAL_CONTACT', 'webdev@pewresearch.org' );
+}
+
 define( 'PRC_REVISIONS_FILE', __FILE__ );
 define( 'PRC_REVISIONS_DIR', __DIR__ );
 define( 'PRC_REVISIONS_BLOCKS_DIR', __DIR__ . '/build' );
 define( 'PRC_REVISIONS_VERSION', '1.0.0' );
+
+// Load the Jetpack Autoloader so runtime version-selection can pick the
+// highest version across all plugins that ship the same library dep
+// (see .cursor/plans/composer-shape-b-migration_0e4e9991.plan.md).
+$prc_revisions_autoloader = __DIR__ . '/vendor/autoload_packages.php';
+if ( file_exists( $prc_revisions_autoloader ) ) {
+	require_once $prc_revisions_autoloader;
+}
+unset( $prc_revisions_autoloader );
 
 /**
  * The code that runs during plugin activation.

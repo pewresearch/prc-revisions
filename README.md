@@ -136,7 +136,7 @@ Version letters are assigned automatically in alphabetical order: `a`, `b`, … 
 
 - **PHP 8.2+**, **WordPress 6.7+**
 - Requires plugin: `prc-platform-core`
-- Uses `\PRC\Platform\Block_Utils\load_blocks` for block registration
+- Uses `\PRC\BlockUtils\load_blocks` for block registration
 - Schema integration requires `prc-schema-seo` filters (`prc_schema_seo_article_schema`, `prc_schema_seo_schema_data`) to be present; degrades silently if absent
 - Fork post exclusion requires `prc_platform_pub_listing_default_args` filter to be consumed by the listing layer
 

@@ -4,12 +4,7 @@
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { PluginPostStatusInfo, store as editorStore } from '@wordpress/editor';
-import {
-	Button,
-	Spinner,
-	Notice,
-	__experimentalHStack as HStack,
-} from '@wordpress/components';
+import { Button, Spinner, Notice, Flex, FlexItem } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
 import { Icon, backup } from '@wordpress/icons';
 
@@ -122,7 +117,7 @@ export default function ForkPanel() {
 
 	return (
 		<PluginPostStatusInfo>
-			<div>
+			<Flex direction="column" gap={2} style={{ flexGrow: 1 }}>
 				{error && (
 					<Notice
 						status="error"
@@ -132,16 +127,23 @@ export default function ForkPanel() {
 						{error}
 					</Notice>
 				)}
-				<Button
-					variant="secondary"
-					onClick={handleCreateFork}
-					isBusy={isCreating}
-					disabled={isCreating}
-					icon={<Icon icon={backup} size={20} />}
-				>
-					{isCreating ? 'Creating...' : 'Create Future Revision'}
-				</Button>
-			</div>
+				<FlexItem>
+					<Button
+						variant="secondary"
+						onClick={handleCreateFork}
+						isBusy={isCreating}
+						disabled={isCreating}
+						icon={<Icon icon={backup} size={20} />}
+						style={{
+							justifyContent: 'center',
+							width: '100%',
+						}}
+						__next40pxDefaultSize
+					>
+						{isCreating ? 'Creating...' : 'Create Future Revision'}
+					</Button>
+				</FlexItem>
+			</Flex>
 		</PluginPostStatusInfo>
 	);
 }

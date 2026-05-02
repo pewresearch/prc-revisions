@@ -67,6 +67,7 @@ class Future_Revisions {
 		$loader->add_action( 'before_delete_post', $this, 'cleanup_fork_reference' );
 		$loader->add_action( 'wp_trash_post', $this, 'cleanup_fork_reference' );
 		$loader->add_action( 'wp_body_open', $this, 'render_future_revision_banner' );
+		$loader->add_filter( 'display_post_states', $this, 'add_future_revision_post_state', 10, 2 );
 	}
 
 	/**
@@ -454,6 +455,44 @@ class Future_Revisions {
 			}
 		</style>
 		<div class="prc-future-revision-banner" role="status">' . $label . $parent_markup . $schedule_text . '</div>';
+	}
+
+	/**
+	 * Badge fork rows and parents in the Posts list table.
+	 *
+	 * @hook display_post_states
+	 *
+	 * @param array   $post_states An array of post display states.
+	 * @param \WP_Post $post       The post object (full object, not excerpt).
+	 * @return array
+	 */
+	public function add_future_revision_post_state( $post_states, $post ) {
+		if ( ! ( $post instanceof \WP_Post ) ) {
+			return $post_states;
+		}
+
+		if ( ! in_array( $post->post_type, Plugin::get_enabled_post_types(), true ) ) {
+			return $post_states;
+		}
+
+		// Fork row: this post is a future revision of another post.
+		$parent_id = (int) get_post_meta( $post->ID, self::FORK_PARENT_META, true );
+		if ( $parent_id ) {
+			$post_states['prc_future_revision'] = __( 'Future Revision', 'prc-revisions' );
+
+			return $post_states;
+		}
+
+		// Parent row: an active fork exists for this post.
+		$active_fork_id = (int) get_post_meta( $post->ID, self::ACTIVE_FORK_META, true );
+		if ( $active_fork_id ) {
+			$fork = get_post( $active_fork_id );
+			if ( $fork && 'trash' !== $fork->post_status ) {
+				$post_states['prc_has_future_revision'] = __( 'Has Future Revision', 'prc-revisions' );
+			}
+		}
+
+		return $post_states;
 	}
 
 	/**
