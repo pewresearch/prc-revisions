@@ -16,9 +16,9 @@ Entrypoint [1mrevision-list/index[39m[22m 2.6 KiB = [1m[32mrevision-list/in
 orphan modules 3.81 KiB [1m[33m[orphan][39m[22m 8 modules
 runtime modules 663 bytes 3 modules
 [1m./src/revision-list/index.js + 8 modules[39m[22m 4.07 KiB [1m[31m[not cacheable][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 2607 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 2395 ms
 
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 122 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 97 ms
 Block metadata PHP file generated at: build/blocks-manifest.php
 
 > @prc/revisions@1.0.0 build:inspector-panel
@@ -30,4 +30,4 @@ Entrypoint [1mindex[39m[22m 11.4 KiB = [1m[32mindex.js[39m[22m 11.1 KiB 
 orphan modules 226 KiB [1m[33m[orphan][39m[22m 335 modules
 runtime modules 663 bytes 3 modules
 [1m./includes/inspector-sidebar-panel/src/index.js + 23 modules[39m[22m 24.2 KiB [1m[31m[not cacheable][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 4502 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 5607 ms
