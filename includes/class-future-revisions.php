@@ -62,7 +62,7 @@ class Future_Revisions {
 	 * @param Loader $loader The loader object.
 	 */
 	public function __construct( $loader ) {
-		$loader->add_action( 'init', $this, 'register_meta' );
+		$loader->add_action( 'init', $this, 'register_meta', 20 );
 		$loader->add_action( 'prc_platform_on_publish', $this, 'handle_fork_publish', 5, 1 );
 		$loader->add_action( 'before_delete_post', $this, 'cleanup_fork_reference' );
 		$loader->add_action( 'wp_trash_post', $this, 'cleanup_fork_reference' );

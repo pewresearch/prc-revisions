@@ -35,10 +35,10 @@ Public revision versioning and fork/merge workflow for PRC Platform. Enables edi
 
 | Hook | Class | Description |
 | --- | --- | --- |
-| `init` (priority 5) | `Plugin` | Calls `add_post_type_support( 'post', 'prc-revisions' )` |
+| `init` (priority 5) | `Plugin` | Calls `add_post_type_support( 'post' \| 'page', 'prc-revisions' )` |
 | `init` | `Rewrite` | Registers `version` rewrite endpoint on `EP_PERMALINK` |
 | `init` | `Public_Revisions` | Registers `_prc_public_revisions` post meta (REST-exposed) |
-| `init` | `Future_Revisions` | Registers fork meta (`_prc_fork_parent`, `_prc_fork_status`, `_prc_active_fork`) per enabled post type |
+| `init` (priority 20) | `Future_Revisions` | Registers fork meta (`_prc_fork_parent`, `_prc_fork_status`, `_prc_active_fork`) per enabled post type |
 | `template_redirect` | `Public_Revisions` | Detects `/version/{letter}` query var; sets up content and title substitution filters, or 404s |
 | `revision_applied` | `Public_Revisions` | Re-parents attachments from revision to published post |
 | `enqueue_block_editor_assets` | `WP_Admin` | Enqueues inspector sidebar panel on `post` screens for supported post types |
@@ -111,7 +111,7 @@ The block reads `postId` from block context. It renders nothing if the post has 
 
 ## Enabling on additional post types
 
-The plugin enables revision features on `post` by default. To enable on additional post types, call `add_post_type_support` from your plugin or theme:
+The plugin enables revision features on `post` and `page` by default. To enable on additional post types, call `add_post_type_support` from your plugin or theme:
 
 ```php
 add_action( 'init', function () {

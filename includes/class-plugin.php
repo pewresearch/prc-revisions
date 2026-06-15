@@ -114,6 +114,7 @@ class Plugin {
 	 */
 	public function register_default_post_type_support() {
 		add_post_type_support( 'post', 'prc-revisions' );
+		add_post_type_support( 'page', 'prc-revisions' );
 	}
 
 	/**
