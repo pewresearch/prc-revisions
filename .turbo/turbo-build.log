@@ -1,9 +1,9 @@
 
-> @prc/revisions@1.0.1 build
+> @prc/revisions@1.0.0 build
 > npm run build:blocks && npm run build:inspector-panel
 
 
-> @prc/revisions@1.0.1 build:blocks
+> @prc/revisions@1.0.0 build:blocks
 > wp-scripts build --experimental-modules --webpack-copy-php && wp-scripts build-blocks-manifest
 
 assets by path [1m[32mrevision-list/*.php[39m[22m 3.07 KiB
@@ -16,12 +16,12 @@ Entrypoint [1mrevision-list/index[39m[22m 2.6 KiB = [1m[32mrevision-list/in
 orphan modules 3.81 KiB [1m[33m[orphan][39m[22m 8 modules
 runtime modules 663 bytes 3 modules
 [1m./src/revision-list/index.js + 8 modules[39m[22m 4.07 KiB [1m[31m[not cacheable][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 5922 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 6011 ms
 
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 242 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 243 ms
 Block metadata PHP file generated at: build/blocks-manifest.php
 
-> @prc/revisions@1.0.1 build:inspector-panel
+> @prc/revisions@1.0.0 build:inspector-panel
 > wp-scripts build --source-path=includes/inspector-sidebar-panel/src --output-path=includes/inspector-sidebar-panel/build
 
 asset [1m[32mindex.js[39m[22m 11.1 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: index)
@@ -30,4 +30,4 @@ Entrypoint [1mindex[39m[22m 11.4 KiB = [1m[32mindex.js[39m[22m 11.1 KiB 
 orphan modules 226 KiB [1m[33m[orphan][39m[22m 335 modules
 runtime modules 663 bytes 3 modules
 [1m./includes/inspector-sidebar-panel/src/index.js + 23 modules[39m[22m 24.2 KiB [1m[31m[not cacheable][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 11187 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 9816 ms

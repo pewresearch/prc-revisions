@@ -111,7 +111,9 @@ The block reads `postId` from block context. It renders nothing if the post has 
 
 ## Enabling on additional post types
 
-The plugin enables revision features on `post` and `page` by default. To enable on additional post types, call `add_post_type_support` from your plugin or theme:
+The plugin enables revision features on `post` and `page` by default. The chart custom post type (`chart`) opts in via `@prc/chart-builder` (`Content_Type::register_revisions_support()` on `init` priority 11).
+
+To enable on other post types, call `add_post_type_support` from your plugin or theme:
 
 ```php
 add_action( 'init', function () {
