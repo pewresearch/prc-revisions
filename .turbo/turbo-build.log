@@ -16,9 +16,9 @@ Entrypoint revision-list/index 2.6 KiB = revision-list/index.js 2.42 KiB revisio
 orphan modules 3.81 KiB [orphan] 8 modules
 runtime modules 663 bytes 3 modules
 ./src/revision-list/index.js + 8 modules 4.07 KiB [not cacheable] [built] [code generated]
-webpack 5.106.2 compiled successfully in 1244 ms
+webpack 5.106.2 compiled successfully in 1477 ms
 
-webpack 5.106.2 compiled successfully in 28 ms
+webpack 5.106.2 compiled successfully in 41 ms
 Block metadata PHP file generated at: build/blocks-manifest.php
 
 > @prc/revisions@1.0.0 build:inspector-panel
@@ -30,4 +30,4 @@ Entrypoint index 11.4 KiB = index.js 11.1 KiB index.asset.php 282 bytes
 orphan modules 226 KiB [orphan] 335 modules
 runtime modules 663 bytes 3 modules
 ./includes/inspector-sidebar-panel/src/index.js + 23 modules 24.2 KiB [not cacheable] [built] [code generated]
-webpack 5.106.2 compiled successfully in 3723 ms
+webpack 5.106.2 compiled successfully in 2368 ms
