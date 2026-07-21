@@ -32,9 +32,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! defined( 'DEFAULT_TECHNICAL_CONTACT' ) ) {
-	define( 'DEFAULT_TECHNICAL_CONTACT', 'webdev@pewresearch.org' );
-}
 
 define( 'PRC_REVISIONS_FILE', __FILE__ );
 define( 'PRC_REVISIONS_DIR', __DIR__ );
@@ -50,25 +47,6 @@ if ( ! defined( 'PRC_PLATFORM' ) ) {
 	}
 	unset( $prc_revisions_autoloader );
 }
-
-/**
- * The code that runs during plugin activation.
- */
-function activate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-plugin-activator.php';
-	Plugin_Activator::activate();
-}
-
-/**
- * The code that runs during plugin deactivation.
- */
-function deactivate() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-plugin-deactivator.php';
-	Plugin_Deactivator::deactivate();
-}
-
-register_activation_hook( __FILE__, '\PRC\Platform\Revisions\activate' );
-register_deactivation_hook( __FILE__, '\PRC\Platform\Revisions\deactivate' );
 
 /**
  * The core plugin class that is used to define the hooks that initialize the various components.

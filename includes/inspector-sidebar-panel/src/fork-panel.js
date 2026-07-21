@@ -138,7 +138,6 @@ export default function ForkPanel() {
 							justifyContent: 'center',
 							width: '100%',
 						}}
-						__next40pxDefaultSize
 					>
 						{isCreating ? 'Creating...' : 'Create Future Revision'}
 					</Button>

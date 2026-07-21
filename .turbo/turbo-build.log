@@ -1,9 +1,9 @@
 
-> @prc/revisions@1.0.0 build
+> @prc/revisions@1.0.1 build
 > npm run build:blocks && npm run build:inspector-panel
 
 
-> @prc/revisions@1.0.0 build:blocks
+> @prc/revisions@1.0.1 build:blocks
 > wp-scripts build --experimental-modules --webpack-copy-php && wp-scripts build-blocks-manifest
 
 assets by path revision-list/*.php 3.07 KiB
@@ -16,18 +16,18 @@ Entrypoint revision-list/index 2.6 KiB = revision-list/index.js 2.42 KiB revisio
 orphan modules 3.81 KiB [orphan] 8 modules
 runtime modules 663 bytes 3 modules
 ./src/revision-list/index.js + 8 modules 4.07 KiB [not cacheable] [built] [code generated]
-webpack 5.106.2 compiled successfully in 1477 ms
+webpack 5.106.2 compiled successfully in 1370 ms
 
-webpack 5.106.2 compiled successfully in 41 ms
+webpack 5.106.2 compiled successfully in 48 ms
 Block metadata PHP file generated at: build/blocks-manifest.php
 
-> @prc/revisions@1.0.0 build:inspector-panel
+> @prc/revisions@1.0.1 build:inspector-panel
 > wp-scripts build --source-path=includes/inspector-sidebar-panel/src --output-path=includes/inspector-sidebar-panel/build
 
 asset index.js 11.1 KiB [compared for emit] [minimized] (name: index)
 asset index.asset.php 282 bytes [compared for emit] (name: index)
-Entrypoint index 11.4 KiB = index.js 11.1 KiB index.asset.php 282 bytes
+Entrypoint index 11.3 KiB = index.js 11.1 KiB index.asset.php 282 bytes
 orphan modules 226 KiB [orphan] 335 modules
 runtime modules 663 bytes 3 modules
-./includes/inspector-sidebar-panel/src/index.js + 23 modules 24.2 KiB [not cacheable] [built] [code generated]
-webpack 5.106.2 compiled successfully in 2368 ms
+./includes/inspector-sidebar-panel/src/index.js + 23 modules 24.1 KiB [not cacheable] [built] [code generated]
+webpack 5.106.2 compiled successfully in 2913 ms
