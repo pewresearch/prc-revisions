@@ -102,6 +102,18 @@ class Rest_API {
 						),
 					),
 				),
+				array(
+					'methods'             => \WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'trash_fork' ),
+					'permission_callback' => array( $this, 'write_permissions_check' ),
+					'args'                => array(
+						'post_id' => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+					),
+				),
 			)
 		);
 
@@ -332,5 +344,46 @@ class Rest_API {
 		$info    = Future_Revisions::get_fork_info( $post_id );
 
 		return new WP_REST_Response( $info, 200 );
+	}
+
+	/**
+	 * Trash a pending future revision (fork).
+	 *
+	 * Accepts either the parent post ID or the fork post ID.
+	 *
+	 * @param WP_REST_Request $request The request object.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function trash_fork( $request ) {
+		$post_id = $request->get_param( 'post_id' );
+		$result  = Future_Revisions::trash_fork( $post_id );
+
+		if ( is_wp_error( $result ) ) {
+			$status_map = array(
+				'invalid_post'         => 404,
+				'no_active_fork'       => 404,
+				'fork_already_trashed' => 410,
+				'fork_already_merged'  => 400,
+				'rest_forbidden'       => 403,
+				'trash_failed'         => 500,
+			);
+			$code   = $result->get_error_code();
+			$status = $status_map[ $code ] ?? 400;
+
+			return new WP_Error(
+				$code,
+				$result->get_error_message(),
+				array( 'status' => $status )
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'trashed'   => true,
+				'fork_id'   => $result['fork_id'],
+				'parent_id' => $result['parent_id'],
+			),
+			200
+		);
 	}
 }

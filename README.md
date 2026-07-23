@@ -8,6 +8,7 @@ Public revision versioning and fork/merge workflow for PRC Platform. Enables edi
 - Lets editors toggle individual WordPress revisions as "public" from the block editor sidebar, assigning sequential version letters (`a`, `b`, … `z`, `aa`, …)
 - Protects public revisions from deletion by WordPress's revision pruning
 - Provides a "fork" workflow: duplicate a published post as a draft, edit it independently, and merge it back into the parent on publish
+- Lets editors discard (trash) a pending future revision from the post status panel without merging
 - Enforces one active fork per post at a time (409 on duplicate fork attempts)
 - Excludes fork posts from publication listing queries (`prc_platform_pub_listing_default_args`)
 - Injects `version` and `isBasedOn` properties into article structured data when viewing a versioned URL; adds `hasPart` to the parent post schema listing all public versions
@@ -68,6 +69,7 @@ All routes are under the `prc-revisions/v1` namespace.
 | `GET` | `/prc-revisions/v1/public-revisions/{post_id}` | Public | Returns all public revisions for a post with version, date, author, URL, and orphaned flag |
 | `POST` | `/prc-revisions/v1/toggle/{post_id}/{revision_id}` | `edit_post` | Toggles a revision's public status; returns `{ action, version, url }` |
 | `POST` | `/prc-revisions/v1/fork/{post_id}` | `edit_post` | Creates a fork draft of a published post; returns `{ fork_id, edit_url }`. Returns 409 if an active fork already exists |
+| `DELETE` | `/prc-revisions/v1/fork/{post_id}` | `edit_post` (+ `delete_post` on the fork) | Trashes a pending future revision. Accepts parent or fork ID; returns `{ trashed, fork_id, parent_id }`. Does not merge content into the parent |
 | `GET` | `/prc-revisions/v1/fork-info/{post_id}` | `edit_post` | Returns fork relationship info: role (`parent`, `fork`, or `none`) and related IDs/URLs |
 
 ### Example: toggle a revision public
@@ -84,6 +86,15 @@ curl -X POST https://example.com/wp-json/prc-revisions/v1/toggle/42/789 \
 curl -X POST https://example.com/wp-json/prc-revisions/v1/fork/42 \
   -H "X-WP-Nonce: {nonce}"
 # Response: { "fork_id": 99, "edit_url": "https://example.com/wp-admin/post.php?post=99&action=edit" }
+```
+
+### Example: discard (trash) a pending future revision
+
+```bash
+# Parent or fork ID both work:
+curl -X DELETE https://example.com/wp-json/prc-revisions/v1/fork/42 \
+  -H "X-WP-Nonce: {nonce}"
+# Response: { "trashed": true, "fork_id": 99, "parent_id": 42 }
 ```
 
 ## Block

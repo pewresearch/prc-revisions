@@ -146,13 +146,27 @@ class Future_Revisions {
 			return new WP_Error( 'not_published', __( 'Only published posts can be forked.', 'prc-revisions' ) );
 		}
 
-		$existing_fork = get_post_meta( $parent_post_id, self::ACTIVE_FORK_META, true );
-		if ( $existing_fork && get_post( $existing_fork ) && 'trash' !== get_post_status( $existing_fork ) ) {
-			return new WP_Error(
-				'fork_exists',
-				__( 'An active fork already exists for this post.', 'prc-revisions' ),
-				array( 'fork_id' => (int) $existing_fork )
-			);
+		$existing_fork = absint( get_post_meta( $parent_post_id, self::ACTIVE_FORK_META, true ) );
+		if ( $existing_fork ) {
+			$existing_post = get_post( $existing_fork );
+			// Only treat as a conflict when the pointer still refers to a
+			// non-merged fork of this parent. A REST-writable `merged` status
+			// (or a leftover pointer) must not block creating a new fork.
+			if (
+				$existing_post
+				&& 'trash' !== $existing_post->post_status
+				&& absint( get_post_meta( $existing_fork, self::FORK_PARENT_META, true ) ) === absint( $parent_post_id )
+			) {
+				if ( 'merged' === get_post_meta( $existing_fork, self::FORK_STATUS_META, true ) ) {
+					delete_post_meta( $parent_post_id, self::ACTIVE_FORK_META );
+				} else {
+					return new WP_Error(
+						'fork_exists',
+						__( 'An active fork already exists for this post.', 'prc-revisions' ),
+						array( 'fork_id' => (int) $existing_fork )
+					);
+				}
+			}
 		}
 
 		$fork_data = array(
@@ -574,18 +588,142 @@ class Future_Revisions {
 	}
 
 	/**
+	 * Reject discard of a merged fork and clear a stale active-fork pointer.
+	 *
+	 * `merge_fork` clears `_prc_active_fork` before trashing, so a normal merge
+	 * does not leave this pointer. When status is REST-marked `merged` without
+	 * a real merge, clear the pointer without trashing so unmerged edits are
+	 * preserved and `create_fork` is not blocked.
+	 *
+	 * @param int $fork_id   Fork post ID.
+	 * @param int $parent_id Parent post ID.
+	 * @return WP_Error Always `fork_already_merged`.
+	 */
+	private static function reject_merged_fork( $fork_id, $parent_id ) {
+		$fork_id   = absint( $fork_id );
+		$parent_id = absint( $parent_id );
+		$active    = absint( get_post_meta( $parent_id, self::ACTIVE_FORK_META, true ) );
+		if ( $active === $fork_id ) {
+			delete_post_meta( $parent_id, self::ACTIVE_FORK_META );
+		}
+
+		return new WP_Error(
+			'fork_already_merged',
+			__( 'This future revision has already been merged.', 'prc-revisions' )
+		);
+	}
+
+	/**
+	 * Trash a pending future revision (fork).
+	 *
+	 * Accepts either the parent post ID (with an active fork) or the fork post ID.
+	 * Does not merge content into the parent. Existing trash/delete hooks clear
+	 * the parent's `_prc_active_fork` meta.
+	 *
+	 * @param int $post_id Parent or fork post ID.
+	 * @return array|WP_Error {
+	 *     @type int $fork_id   Trashed fork ID.
+	 *     @type int $parent_id Parent post ID.
+	 * }
+	 */
+	public static function trash_fork( $post_id ) {
+		$post_id = absint( $post_id );
+		$post    = get_post( $post_id );
+		if ( ! $post ) {
+			return new WP_Error(
+				'invalid_post',
+				__( 'Post does not exist.', 'prc-revisions' )
+			);
+		}
+
+		$fork_id   = 0;
+		$parent_id = 0;
+
+		$active_fork_id = absint( get_post_meta( $post_id, self::ACTIVE_FORK_META, true ) );
+		if ( $active_fork_id ) {
+			$fork = get_post( $active_fork_id );
+			if ( $fork && 'trash' !== $fork->post_status ) {
+				// Only trust `_prc_active_fork` when it points at a fork of this parent.
+				$fork_parent_of_active = absint( get_post_meta( $active_fork_id, self::FORK_PARENT_META, true ) );
+				if ( $fork_parent_of_active === $post_id ) {
+					// Match the fork-ID path: never trash a merged fork.
+					if ( 'merged' === get_post_meta( $active_fork_id, self::FORK_STATUS_META, true ) ) {
+						return self::reject_merged_fork( $active_fork_id, $post_id );
+					}
+					$fork_id   = $active_fork_id;
+					$parent_id = $post_id;
+				}
+			}
+		}
+
+		if ( ! $fork_id ) {
+			$fork_parent_id = absint( get_post_meta( $post_id, self::FORK_PARENT_META, true ) );
+			if ( $fork_parent_id ) {
+				if ( 'trash' === $post->post_status ) {
+					return new WP_Error(
+						'fork_already_trashed',
+						__( 'This future revision is already in the trash.', 'prc-revisions' )
+					);
+				}
+				$fork_status = get_post_meta( $post_id, self::FORK_STATUS_META, true );
+				if ( 'merged' === $fork_status ) {
+					return self::reject_merged_fork( $post_id, $fork_parent_id );
+				}
+				$fork_id   = $post_id;
+				$parent_id = $fork_parent_id;
+			}
+		}
+
+		if ( ! $fork_id || ! $parent_id ) {
+			return new WP_Error(
+				'no_active_fork',
+				__( 'No pending future revision found for this post.', 'prc-revisions' )
+			);
+		}
+
+		if ( ! current_user_can( 'delete_post', $fork_id ) ) {
+			return new WP_Error(
+				'rest_forbidden',
+				__( 'You do not have permission to delete this future revision.', 'prc-revisions' )
+			);
+		}
+
+		$result = wp_trash_post( $fork_id );
+		if ( ! $result ) {
+			return new WP_Error(
+				'trash_failed',
+				__( 'Could not trash the future revision.', 'prc-revisions' )
+			);
+		}
+
+		return array(
+			'fork_id'   => $fork_id,
+			'parent_id' => $parent_id,
+		);
+	}
+
+	/**
 	 * Get the fork info for a given post.
 	 *
 	 * @param int $post_id The post ID (parent or fork).
 	 * @return array Fork information.
 	 */
 	public static function get_fork_info( $post_id ) {
-		$active_fork_id = get_post_meta( $post_id, self::ACTIVE_FORK_META, true );
+		$post_id        = absint( $post_id );
+		$active_fork_id = absint( get_post_meta( $post_id, self::ACTIVE_FORK_META, true ) );
 		$fork_parent_id = get_post_meta( $post_id, self::FORK_PARENT_META, true );
 
 		if ( $active_fork_id ) {
 			$fork = get_post( $active_fork_id );
-			if ( $fork && 'trash' !== $fork->post_status ) {
+			// Match trash_fork: only report parent role for a pending (non-merged,
+			// non-trashed) fork of this post. Merged status is REST-writable and
+			// must not surface Discard for a fork that trash_fork will reject.
+			if (
+				$fork
+				&& 'trash' !== $fork->post_status
+				&& absint( get_post_meta( $active_fork_id, self::FORK_PARENT_META, true ) ) === $post_id
+				&& 'merged' !== get_post_meta( $active_fork_id, self::FORK_STATUS_META, true )
+			) {
 				return array(
 					'role'          => 'parent',
 					'fork_id'       => (int) $active_fork_id,
