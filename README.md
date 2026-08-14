@@ -1,5 +1,7 @@
 # PRC Revisions
 
+> Canonical docs: [docs/plugins/prc-revisions/](../../docs/plugins/prc-revisions/)
+
 Public revision versioning and fork/merge workflow for PRC Platform. Enables editors to mark specific WordPress revisions as publicly accessible via versioned URLs, and to create draft forks of published posts that merge back on publish.
 
 ## What it does
