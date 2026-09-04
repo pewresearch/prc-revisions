@@ -1,6 +1,6 @@
 {
 	"name": "@prc/revisions",
-	"version": "1.1.0",
+	"version": "1.0.1",
 	"description": "Public revision versioning and fork/merge workflow for PRC Platform.",
 	"scripts": {
 		"build": "npm run build:blocks && npm run build:inspector-panel && npm run build:admin-dataview",

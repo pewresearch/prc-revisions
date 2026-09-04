@@ -1,9 +1,9 @@
 
-> @prc/revisions@1.1.0 build
+> @prc/revisions@1.0.1 build
 > npm run build:blocks && npm run build:inspector-panel && npm run build:admin-dataview
 
 
-> @prc/revisions@1.1.0 build:blocks
+> @prc/revisions@1.0.1 build:blocks
 > wp-scripts build --experimental-modules --webpack-copy-php && wp-scripts build-blocks-manifest
 
 assets by path [1m[32mrevision-list/*.php[39m[22m 3.07 KiB
@@ -16,12 +16,12 @@ Entrypoint [1mrevision-list/index[39m[22m 2.6 KiB = [1m[32mrevision-list/in
 orphan modules 3.81 KiB [1m[33m[orphan][39m[22m 8 modules
 runtime modules 663 bytes 3 modules
 [1m./src/revision-list/index.js + 8 modules[39m[22m 4.07 KiB [1m[31m[not cacheable][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 455 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 2558 ms
 
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 18 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 102 ms
 Block metadata PHP file generated at: build/blocks-manifest.php
 
-> @prc/revisions@1.1.0 build:inspector-panel
+> @prc/revisions@1.0.1 build:inspector-panel
 > wp-scripts build --source-path=includes/inspector-sidebar-panel/src --output-path=includes/inspector-sidebar-panel/build
 
 asset [1m[32mindex.js[39m[22m 12.2 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: index)
@@ -30,9 +30,9 @@ Entrypoint [1mindex[39m[22m 12.5 KiB = [1m[32mindex.js[39m[22m 12.2 KiB 
 orphan modules 230 KiB [1m[33m[orphan][39m[22m 335 modules
 runtime modules 663 bytes 3 modules
 [1m./includes/inspector-sidebar-panel/src/index.js + 23 modules[39m[22m 27.4 KiB [1m[31m[not cacheable][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 1257 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 4237 ms
 
-> @prc/revisions@1.1.0 build:admin-dataview
+> @prc/revisions@1.0.1 build:admin-dataview
 > wp-scripts build --source-path=src/admin-dataview --output-path=build/admin-dataview
 
 assets by chunk 2.07 KiB (name: index)
@@ -47,4 +47,4 @@ runtime modules 2.5 KiB 3 modules
 built modules 2.13 KiB (javascript) 170 bytes (css/mini-extract) [1m[33m[built][39m[22m
   [1m./src/admin-dataview/index.js + 5 modules[39m[22m 2.13 KiB [1m[31m[not cacheable][39m[22m [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
   css ../../node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[3].use[1]!../../node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[3].use[2]!../../node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[3].use[3]![1m./src/admin-dataview/style.scss[39m[22m 170 bytes [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
-webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 1217 ms
+webpack 5.106.2 compiled [1m[32msuccessfully[39m[22m in 4300 ms
