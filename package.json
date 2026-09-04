@@ -1,19 +1,22 @@
 {
 	"name": "@prc/revisions",
-	"version": "1.0.1",
+	"version": "1.1.0",
 	"description": "Public revision versioning and fork/merge workflow for PRC Platform.",
 	"scripts": {
-		"build": "npm run build:blocks && npm run build:inspector-panel",
+		"build": "npm run build:blocks && npm run build:inspector-panel && npm run build:admin-dataview",
 		"build:blocks": "wp-scripts build --experimental-modules --webpack-copy-php && wp-scripts build-blocks-manifest",
 		"build:inspector-panel": "wp-scripts build --source-path=includes/inspector-sidebar-panel/src --output-path=includes/inspector-sidebar-panel/build",
+		"build:admin-dataview": "wp-scripts build --source-path=src/admin-dataview --output-path=build/admin-dataview",
 		"start": "npm run start:blocks",
 		"start:blocks": "wp-scripts build-blocks-manifest; wp-scripts start --experimental-modules --webpack-copy-php",
-		"start:inspector-panel": "wp-scripts start --source-path=includes/inspector-sidebar-panel/src --output-path=includes/inspector-sidebar-panel/build"
+		"start:inspector-panel": "wp-scripts start --source-path=includes/inspector-sidebar-panel/src --output-path=includes/inspector-sidebar-panel/build",
+		"start:admin-dataview": "wp-scripts start --source-path=src/admin-dataview --output-path=build/admin-dataview"
 	},
 	"devDependencies": {
 		"@wordpress/scripts": "^31.1.0"
 	},
 	"dependencies": {
+		"@prc/components": "*",
 		"@wordpress/icons": "^10.22.0"
 	},
 	"license": "GPL-2.0-or-later"

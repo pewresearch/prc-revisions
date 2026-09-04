@@ -70,6 +70,7 @@ class Plugin {
 		require_once plugin_dir_path( __DIR__ ) . '/includes/class-schema.php';
 		require_once plugin_dir_path( __DIR__ ) . '/includes/class-wp-admin.php';
 		require_once plugin_dir_path( __DIR__ ) . '/includes/class-future-revisions.php';
+		require_once plugin_dir_path( __DIR__ ) . '/includes/dataviews/class-dataviews-provider.php';
 	}
 
 	/**
@@ -87,6 +88,7 @@ class Plugin {
 		new Schema( $this->get_loader() );
 		new WP_Admin( $this->get_loader() );
 		new Future_Revisions( $this->get_loader() );
+		new DataViews_Provider( $this->get_loader() );
 
 		// Initialize blocks.
 		if ( is_dir( PRC_REVISIONS_BLOCKS_DIR ) ) {

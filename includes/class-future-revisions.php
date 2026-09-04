@@ -180,7 +180,11 @@ class Future_Revisions {
 			'post_parent'  => 0,
 		);
 
-		$fork_id = wp_insert_post( $fork_data, true );
+		// wp_insert_post() runs wp_unslash() on post fields. Content from
+		// get_post() is already unslashed, so without wp_slash() Gutenberg
+		// RichText \uXXXX escapes in block markup are corrupted
+		// (\u003c → u003c). See PRC-633 / PRC-528.
+		$fork_id = wp_insert_post( wp_slash( $fork_data ), true );
 		if ( is_wp_error( $fork_id ) ) {
 			return $fork_id;
 		}
@@ -309,15 +313,19 @@ class Future_Revisions {
 			$resolved_slug = $fork_slug;
 		}
 
+		// wp_update_post() unslashes post fields. Slash so Gutenberg RichText
+		// \uXXXX escapes in block markup survive the merge write (PRC-633).
 		$update_result = wp_update_post(
-			array(
-				'ID'            => $parent_id,
-				'post_title'    => $fork->post_title,
-				'post_name'     => $resolved_slug,
-				'post_content'  => $fork->post_content,
-				'post_excerpt'  => $fork->post_excerpt,
-				'post_date'     => current_time( 'mysql' ),
-				'post_date_gmt' => current_time( 'mysql', true ),
+			wp_slash(
+				array(
+					'ID'            => $parent_id,
+					'post_title'    => $fork->post_title,
+					'post_name'     => $resolved_slug,
+					'post_content'  => $fork->post_content,
+					'post_excerpt'  => $fork->post_excerpt,
+					'post_date'     => current_time( 'mysql' ),
+					'post_date_gmt' => current_time( 'mysql', true ),
+				)
 			),
 			true
 		);
