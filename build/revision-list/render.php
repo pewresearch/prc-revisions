@@ -12,21 +12,24 @@
 
 namespace PRC\Platform\Revisions;
 
-$post_id   = $block->context['postId'] ?? get_the_ID();
-$show_dates = $attributes['showDates'] ?? true;
+$list_post_id = $block->context['postId'] ?? get_the_ID();
+$show_dates   = $attributes['showDates'] ?? true;
 
-$public_revisions = Public_Revisions::get_public_revisions( $post_id );
+$public_revisions = Public_Revisions::get_public_revisions( $list_post_id );
 
 if ( empty( $public_revisions ) ) {
 	return '';
 }
 
-$parent_url = get_permalink( $post_id );
+$parent_url = get_permalink( $list_post_id );
 $list_items = '';
 
 foreach ( $public_revisions as $entry ) {
+	if ( ! empty( $entry['orphaned'] ) ) {
+		continue;
+	}
 	$revision = get_post( $entry['revision_id'] );
-	if ( ! $revision ) {
+	if ( ! Public_Revisions::revision_belongs_to_post( $revision, (int) $list_post_id ) ) {
 		continue;
 	}
 
@@ -58,6 +61,6 @@ $block_attrs = get_block_wrapper_attributes(
 
 echo wp_sprintf(
 	'<ul %1$s>%2$s</ul>',
-	$block_attrs,
-	$list_items
+	$block_attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes() is core-escaped.
+	wp_kses_post( $list_items )
 );

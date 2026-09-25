@@ -6,7 +6,7 @@
 	"require": {
 		"php": ">=8.2",
 		"automattic/jetpack-autoloader": "^5.0",
-		"prc/block-utils": "^1.0"
+		"prc/primitives": "^2.0"
 	},
 	"config": {
 		"allow-plugins": {
@@ -23,7 +23,7 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/pewresearch/prc-block-utils"
+			"url": "https://github.com/pewresearch/prc-primitives.git"
 		}
 	]
 }

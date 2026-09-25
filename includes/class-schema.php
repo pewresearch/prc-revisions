@@ -79,8 +79,11 @@ class Schema {
 		$parts      = array();
 
 		foreach ( $public_revisions as $entry ) {
+			if ( ! empty( $entry['orphaned'] ) ) {
+				continue;
+			}
 			$revision = get_post( $entry['revision_id'] );
-			if ( ! $revision ) {
+			if ( ! Public_Revisions::revision_belongs_to_post( $revision, (int) $post_id ) ) {
 				continue;
 			}
 

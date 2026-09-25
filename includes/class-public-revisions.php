@@ -47,12 +47,21 @@ class Public_Revisions {
 	private $version_endpoint_parent_id = null;
 
 	/**
+	 * True while rewriting public revision meta from the metadata filter.
+	 *
+	 * @var bool
+	 */
+	private static $is_writing_public_revisions_meta = false;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param Loader $loader The loader object.
 	 */
 	public function __construct( $loader ) {
 		$loader->add_action( 'init', $this, 'register_meta' );
+		$loader->add_filter( 'add_post_metadata', $this, 'filter_write_public_revisions_meta', 10, 4 );
+		$loader->add_filter( 'update_post_metadata', $this, 'filter_write_public_revisions_meta', 10, 4 );
 		$loader->add_action( 'parse_request', $this, 'maybe_intercept_version_request', 1 );
 		$loader->add_filter( 'redirect_canonical', $this, 'prevent_version_canonical_redirect', 1, 2 );
 		$loader->add_action( 'template_redirect', $this, 'handle_version_endpoint' );
@@ -77,11 +86,11 @@ class Public_Revisions {
 			'',
 			self::META_KEY,
 			array(
-				'single'        => true,
-				'type'          => 'array',
-				'description'   => 'Array of public revision mappings (version letter => revision ID).',
-				'default'       => array(),
-				'show_in_rest'  => array(
+				'single'            => true,
+				'type'              => 'array',
+				'description'       => 'Array of public revision mappings (version letter => revision ID).',
+				'default'           => array(),
+				'show_in_rest'      => array(
 					'schema' => array(
 						'items' => array(
 							'type'       => 'object',
@@ -96,11 +105,129 @@ class Public_Revisions {
 						),
 					),
 				),
-				'auth_callback' => function () {
-					return current_user_can( 'edit_posts' );
-				},
+				'sanitize_callback' => array( $this, 'sanitize_public_revisions_meta' ),
+				'auth_callback'     => array( $this, 'authorize_public_revisions_meta' ),
 			)
 		);
+	}
+
+	/**
+	 * Authorize writes to `_prc_public_revisions` for the specific post.
+	 *
+	 * @param bool   $allowed   Whether the user can add the object meta.
+	 * @param string $meta_key  Meta key.
+	 * @param int    $object_id Object ID.
+	 * @return bool
+	 */
+	public function authorize_public_revisions_meta( $allowed, $meta_key, $object_id ) {
+		unset( $allowed, $meta_key );
+		$object_id = (int) $object_id;
+		if ( $object_id > 0 ) {
+			return current_user_can( 'edit_post', $object_id );
+		}
+		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * Sanitize `_prc_public_revisions` shape (version letter + revision post).
+	 *
+	 * Parent match is applied in `filter_write_public_revisions_meta()` because
+	 * `sanitize_meta()` does not receive the object ID.
+	 *
+	 * @param mixed $meta_value Raw meta value.
+	 * @return array
+	 */
+	public function sanitize_public_revisions_meta( $meta_value ) {
+		return self::sanitize_public_revisions_value( $meta_value, 0 );
+	}
+
+	/**
+	 * Drop mappings whose revision does not belong to this post on every meta write.
+	 *
+	 * @param null|bool $check      Whether to allow updating metadata for the given type.
+	 * @param int       $object_id  Object ID.
+	 * @param string    $meta_key   Meta key.
+	 * @param mixed     $meta_value Meta value.
+	 * @return null|bool
+	 */
+	public function filter_write_public_revisions_meta( $check, $object_id, $meta_key, $meta_value ) {
+		if ( null !== $check || self::META_KEY !== $meta_key ) {
+			return $check;
+		}
+		if ( self::$is_writing_public_revisions_meta ) {
+			return $check;
+		}
+
+		$object_id = (int) $object_id;
+		$clean     = self::sanitize_public_revisions_value( $meta_value, $object_id );
+		if ( wp_json_encode( $clean ) === wp_json_encode( $meta_value ) ) {
+			return $check;
+		}
+
+		self::$is_writing_public_revisions_meta = true;
+		update_post_meta( $object_id, $meta_key, $clean );
+		self::$is_writing_public_revisions_meta = false;
+
+		return true;
+	}
+
+	/**
+	 * Whether a post is a WordPress revision of the given parent.
+	 *
+	 * @param mixed $revision Revision post or null.
+	 * @param int   $post_id  Expected parent post ID.
+	 * @return bool
+	 */
+	public static function revision_belongs_to_post( $revision, int $post_id ): bool {
+		return $revision instanceof \WP_Post
+			&& 'revision' === $revision->post_type
+			&& (int) $revision->post_parent === $post_id;
+	}
+
+	/**
+	 * Normalize public revision mappings and drop invalid entries.
+	 *
+	 * @param mixed $value     Raw meta value.
+	 * @param int   $object_id Parent post ID. When greater than 0, require post_parent match.
+	 * @return array
+	 */
+	public static function sanitize_public_revisions_value( $value, int $object_id = 0 ): array {
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$clean = array();
+		foreach ( $value as $entry ) {
+			if ( ! is_array( $entry ) ) {
+				continue;
+			}
+
+			$version = isset( $entry['version'] ) ? strtolower( sanitize_text_field( (string) $entry['version'] ) ) : '';
+			if ( ! preg_match( '/^[a-z]{1,2}$/', $version ) ) {
+				continue;
+			}
+
+			$revision_id = isset( $entry['revision_id'] ) ? absint( $entry['revision_id'] ) : 0;
+			if ( $revision_id < 1 ) {
+				continue;
+			}
+
+			$revision = get_post( $revision_id );
+			if ( ! $revision || 'revision' !== $revision->post_type ) {
+				continue;
+			}
+
+			if ( $object_id > 0 && (int) $revision->post_parent !== $object_id ) {
+				continue;
+			}
+
+			$clean[] = array(
+				'version'     => $version,
+				'revision_id' => $revision_id,
+			);
+		}
+
+		return $clean;
 	}
 
 	/**
@@ -215,9 +342,8 @@ class Public_Revisions {
 			'fields'                 => 'ids',
 			'no_found_rows'          => true,
 			'ignore_sticky_posts'    => true,
-			'suppress_filters'       => true,
-			'update_post_meta_cache'   => false,
-			'update_post_term_cache'   => false,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
 		);
 
 		if ( ! empty( $qv['post_type'] ) ) {
@@ -318,7 +444,7 @@ class Public_Revisions {
 		}
 
 		$revision = get_post( $revision_id );
-		if ( ! $revision || 'revision' !== $revision->post_type ) {
+		if ( ! self::revision_belongs_to_post( $revision, $post_id ) ) {
 			global $wp_query;
 			$wp_query->set_404();
 			status_header( 404 );
@@ -410,22 +536,16 @@ class Public_Revisions {
 	 */
 	public function filter_get_the_date_for_public_revision( $the_date, $format, $post ) {
 		if ( null === self::$current_revision_context || ! $post instanceof \WP_Post ) {
-			do_action('qm/debug', 'No revision context');
 			return $the_date;
 		}
 		if ( (int) $post->ID !== self::$current_revision_context['parent_id'] ) {
-			do_action('qm/debug', 'Not parent');
 			return $the_date;
 		}
 		if ( ! in_the_loop() || ! is_main_query() ) {
-			do_action('qm/debug', 'Not in loop');
 			return $the_date;
 		}
 
 		$revision = get_post( self::$current_revision_context['revision_id'] );
-
-		do_action('qm/debug', 'REVISION:');
-		do_action('qm/debug', print_r($revision, true));
 
 		if ( ! $revision ) {
 			return $the_date;
@@ -730,9 +850,9 @@ class Public_Revisions {
 	 *
 	 * @hook pre_delete_post
 	 *
-	 * @param bool|null  $delete       Whether to go forward with deletion.
-	 * @param \WP_Post   $post         Post object.
-	 * @param bool       $force_delete Whether to bypass trash.
+	 * @param bool|null $delete       Whether to go forward with deletion.
+	 * @param \WP_Post  $post         Post object.
+	 * @param bool      $force_delete Whether to bypass trash.
 	 * @return bool|null False to block deletion, pass through otherwise.
 	 */
 	public function protect_public_revision( $delete, $post, $force_delete ) {
@@ -799,7 +919,7 @@ class Public_Revisions {
 				continue;
 			}
 			$revision = get_post( (int) $entry['revision_id'] );
-			if ( $revision && 'revision' === $revision->post_type ) {
+			if ( self::revision_belongs_to_post( $revision, (int) $post_id ) ) {
 				$result[] = $entry;
 			} else {
 				$result[] = array_merge( $entry, array( 'orphaned' => true ) );
@@ -855,7 +975,7 @@ class Public_Revisions {
 	 *
 	 * @param int $post_id     The parent post ID.
 	 * @param int $revision_id The revision ID to toggle.
-	 * @return array The result with 'action' (added|removed) and 'version' letter.
+	 * @return array|\WP_Error Result with 'action' (added|removed) and 'version' letter, or WP_Error when the revision is not a child of $post_id.
 	 */
 	public static function toggle_public_revision( $post_id, $revision_id ) {
 		$revisions = self::get_public_revisions( $post_id );
@@ -870,6 +990,14 @@ class Public_Revisions {
 					'version' => $version,
 				);
 			}
+		}
+
+		$revision = get_post( $revision_id );
+		if ( ! self::revision_belongs_to_post( $revision, (int) $post_id ) ) {
+			return new \WP_Error(
+				'revision_mismatch',
+				__( 'The revision does not belong to the specified post.', 'prc-revisions' )
+			);
 		}
 
 		$version     = self::get_next_version_letter( $post_id );

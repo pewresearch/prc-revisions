@@ -258,7 +258,7 @@ class Rest_API {
 		$revision_id = $request->get_param( 'revision_id' );
 
 		$revision = get_post( $revision_id );
-		$orphaned = ! $revision || 'revision' !== $revision->post_type;
+		$orphaned = ! Public_Revisions::revision_belongs_to_post( $revision, (int) $post_id );
 
 		if ( $orphaned ) {
 			$public_revisions = Public_Revisions::get_public_revisions( $post_id );
@@ -270,21 +270,28 @@ class Rest_API {
 				}
 			}
 			if ( ! $found ) {
+				if ( $revision && 'revision' === $revision->post_type ) {
+					return new WP_Error(
+						'revision_mismatch',
+						__( 'The revision does not belong to the specified post.', 'prc-revisions' ),
+						array( 'status' => 400 )
+					);
+				}
 				return new WP_Error(
 					'invalid_revision',
 					__( 'The specified revision does not exist.', 'prc-revisions' ),
 					array( 'status' => 404 )
 				);
 			}
-		} elseif ( (int) $revision->post_parent !== (int) $post_id ) {
-			return new WP_Error(
-				'revision_mismatch',
-				__( 'The revision does not belong to the specified post.', 'prc-revisions' ),
-				array( 'status' => 400 )
-			);
 		}
 
 		$result = Public_Revisions::toggle_public_revision( $post_id, $revision_id );
+		if ( is_wp_error( $result ) ) {
+			if ( empty( $result->get_error_data() ) ) {
+				$result->add_data( array( 'status' => 400 ) );
+			}
+			return $result;
+		}
 
 		$parent_url  = get_permalink( $post_id );
 		$version_url = '';
