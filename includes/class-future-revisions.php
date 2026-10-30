@@ -68,6 +68,42 @@ class Future_Revisions {
 		$loader->add_action( 'wp_trash_post', $this, 'cleanup_fork_reference' );
 		$loader->add_action( 'wp_body_open', $this, 'render_future_revision_banner' );
 		$loader->add_filter( 'display_post_states', $this, 'add_future_revision_post_state', 10, 2 );
+		$loader->add_filter( 'wp_unique_post_slug', $this, 'keep_parent_slug_on_fork', 10, 6 );
+	}
+
+	/**
+	 * Keep a fork's slug mergeable when an editor sets it to the parent's slug.
+	 *
+	 * Without this, WP suffixes the fork (`slug-2`) because the parent owns the
+	 * slug, and the merge then writes that suffixed slug onto the parent. The
+	 * `__fork` form tells `merge_fork()` to keep the parent's slug.
+	 *
+	 * @hook wp_unique_post_slug
+	 *
+	 * @param string $slug          The unique slug WP chose.
+	 * @param int    $post_id       Post ID.
+	 * @param string $post_status   Post status.
+	 * @param string $post_type     Post type.
+	 * @param int    $post_parent   Post parent ID.
+	 * @param string $original_slug The slug before WP made it unique.
+	 * @return string
+	 */
+	public function keep_parent_slug_on_fork( $slug, $post_id, $post_status, $post_type, $post_parent, $original_slug ) {
+		if ( $slug === $original_slug || ! $post_id ) {
+			return $slug;
+		}
+
+		$parent_id = absint( get_post_meta( $post_id, self::FORK_PARENT_META, true ) );
+		if ( ! $parent_id ) {
+			return $slug;
+		}
+
+		$parent = get_post( $parent_id );
+		if ( ! $parent || $parent->post_name !== $original_slug ) {
+			return $slug;
+		}
+
+		return $original_slug . '__fork';
 	}
 
 	/**
@@ -313,6 +349,11 @@ class Future_Revisions {
 			$resolved_slug = $fork_slug;
 		}
 
+		// wp_unique_post_slug() checks posts of every status, so while the fork
+		// still owns its slug the parent would get `-2`. The fork is trashed
+		// below anyway; give it the trashed suffix now to free the slug.
+		wp_add_trashed_suffix_to_post_name_for_post( $fork_id );
+
 		// wp_update_post() unslashes post fields. Slash so Gutenberg RichText
 		// \uXXXX escapes in block markup survive the merge write (PRC-633).
 		$update_result = wp_update_post(
@@ -331,6 +372,7 @@ class Future_Revisions {
 		);
 
 		if ( is_wp_error( $update_result ) ) {
+			self::restore_fork_slug( $fork_id, $fork_slug );
 			return $update_result;
 		}
 
@@ -388,6 +430,20 @@ class Future_Revisions {
 		wp_trash_post( $fork_id );
 
 		return true;
+	}
+
+	/**
+	 * Undo wp_add_trashed_suffix_to_post_name_for_post() on a fork that failed to merge.
+	 *
+	 * @param int    $fork_id   The fork post ID.
+	 * @param string $fork_slug The fork's slug before the merge.
+	 */
+	private static function restore_fork_slug( $fork_id, $fork_slug ) {
+		global $wpdb;
+		delete_post_meta( $fork_id, '_wp_desired_post_slug' );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Mirrors core's trashed-suffix write; wp_update_post() would re-run the publish pipeline.
+		$wpdb->update( $wpdb->posts, array( 'post_name' => $fork_slug ), array( 'ID' => $fork_id ) );
+		clean_post_cache( $fork_id );
 	}
 
 	/**
