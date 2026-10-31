@@ -5,8 +5,7 @@
 	"license": "GPL-2.0-or-later",
 	"require": {
 		"php": ">=8.2",
-		"automattic/jetpack-autoloader": "^5.0",
-		"prc/primitives": "^2.0"
+		"automattic/jetpack-autoloader": "^5.0"
 	},
 	"config": {
 		"allow-plugins": {
@@ -19,11 +18,5 @@
 		"platform": {
 			"php": "8.4.0"
 		}
-	},
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/pewresearch/prc-primitives.git"
-		}
-	]
+	}
 }
