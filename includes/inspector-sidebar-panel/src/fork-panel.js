@@ -19,6 +19,8 @@ import { Icon, backup } from '@wordpress/icons';
 
 import { REST_NAMESPACE } from './hooks';
 
+const CREATE_BUSY_RETRY_MS = 2000;
+
 /**
  * Clear `_prc_active_fork` on the parent entity record without marking edits dirty.
  * Chart synced-ref resolution reads this meta from core-data (including `context: edit`).
@@ -103,14 +105,46 @@ export default function ForkPanel() {
 		setIsCreating(true);
 		setError(null);
 		try {
-			const result = await apiFetch({
-				path: `/${REST_NAMESPACE}/fork/${postId}`,
-				method: 'POST',
-			});
-			if (result.edit_url) {
-				window.location.href = result.edit_url;
+			let attempt = 0;
+			for (;;) {
+				try {
+					const result = await apiFetch({
+						path: `/${REST_NAMESPACE}/fork/${postId}`,
+						method: 'POST',
+					});
+					if (result.edit_url) {
+						window.location.href = result.edit_url;
+					}
+					return;
+				} catch (err) {
+					if (err.code !== 'fork_create_busy' || attempt > 0) {
+						throw err;
+					}
+					attempt += 1;
+					await new Promise((resolve) =>
+						setTimeout(resolve, CREATE_BUSY_RETRY_MS)
+					);
+				}
 			}
 		} catch (err) {
+			if (err.code === 'fork_exists' && err.data?.fork_id) {
+				try {
+					const info = await apiFetch({
+						path: `/${REST_NAMESPACE}/fork-info/${postId}`,
+					});
+					setForkInfo(info);
+					if (
+						info.role === 'parent' &&
+						info.fork_id === err.data.fork_id &&
+						info.fork_edit_url
+					) {
+						window.location.href = info.fork_edit_url;
+						return;
+					}
+				} catch {
+					// The message below still tells the editor a fork exists.
+				}
+			}
 			setError(err.message);
 			setIsCreating(false);
 		}
@@ -246,6 +280,7 @@ export default function ForkPanel() {
 				)}
 				<FlexItem>
 					<Button
+						__next40pxDefaultSize
 						variant="secondary"
 						onClick={handleCreateFork}
 						isBusy={isCreating}

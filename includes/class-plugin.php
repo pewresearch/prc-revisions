@@ -69,8 +69,14 @@ class Plugin {
 		require_once plugin_dir_path( __DIR__ ) . '/includes/class-rest-api.php';
 		require_once plugin_dir_path( __DIR__ ) . '/includes/class-schema.php';
 		require_once plugin_dir_path( __DIR__ ) . '/includes/class-wp-admin.php';
+		require_once plugin_dir_path( __DIR__ ) . '/includes/enum-fork-status.php';
 		require_once plugin_dir_path( __DIR__ ) . '/includes/class-future-revisions.php';
+		require_once plugin_dir_path( __DIR__ ) . '/includes/class-fork-recovery.php';
 		require_once plugin_dir_path( __DIR__ ) . '/includes/dataviews/class-dataviews-provider.php';
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once plugin_dir_path( __DIR__ ) . '/includes/class-cli.php';
+		}
 	}
 
 	/**
@@ -88,6 +94,7 @@ class Plugin {
 		new Schema( $this->get_loader() );
 		new WP_Admin( $this->get_loader() );
 		new Future_Revisions( $this->get_loader() );
+		new Fork_Recovery( $this->get_loader() );
 		new DataViews_Provider( $this->get_loader() );
 
 		// Initialize blocks.

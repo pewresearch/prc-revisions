@@ -120,12 +120,12 @@ The block reads `postId` from block context. It renders nothing if the post has 
 
 ## Post meta
 
-| Meta key                | Stored on   | Type      | Description                                                  |
-| ----------------------- | ----------- | --------- | ------------------------------------------------------------ |
-| `_prc_public_revisions` | Parent post | `array`   | Array of `{ version: string, revision_id: int }` mappings    |
-| `_prc_fork_parent`      | Fork post   | `integer` | ID of the published post this fork was created from          |
-| `_prc_fork_status`      | Fork post   | `string`  | Fork lifecycle state: `draft`, `pending_review`, or `merged` |
-| `_prc_active_fork`      | Parent post | `integer` | ID of the currently active fork; enforces one-fork-at-a-time |
+| Meta key                | Stored on   | Type      | Description                                                                 |
+| ----------------------- | ----------- | --------- | --------------------------------------------------------------------------- |
+| `_prc_public_revisions` | Parent post | `array`   | Array of `{ version: string, revision_id: int }` mappings                   |
+| `_prc_fork_parent`      | Fork post   | `integer` | ID of the published post this fork was created from                         |
+| `_prc_fork_status`      | Fork post   | `string`  | Fork state: `draft`, `merging`, `merged`, or `discarded`. Read-only in REST |
+| `_prc_active_fork`      | Parent post | `integer` | ID of the currently active fork; enforces one-fork-at-a-time                |
 
 ## Enabling on additional post types
 

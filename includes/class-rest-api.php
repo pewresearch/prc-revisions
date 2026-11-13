@@ -320,7 +320,11 @@ class Rest_API {
 
 		$fork_id = Future_Revisions::create_fork( $post_id );
 		if ( is_wp_error( $fork_id ) ) {
-			$status = 'fork_exists' === $fork_id->get_error_code() ? 409 : 400;
+			$code   = $fork_id->get_error_code();
+			$status = in_array( $code, array( 'fork_exists', 'fork_create_busy' ), true ) ? 409 : 400;
+			if ( 'fork_status_failed' === $code ) {
+				$status = 500;
+			}
 			return new WP_Error(
 				$fork_id->get_error_code(),
 				$fork_id->get_error_message(),
@@ -371,6 +375,8 @@ class Rest_API {
 				'no_active_fork'       => 404,
 				'fork_already_trashed' => 410,
 				'fork_already_merged'  => 400,
+				'fork_trash_busy'      => 409,
+				'fork_merging'         => 409,
 				'rest_forbidden'       => 403,
 				'trash_failed'         => 500,
 			);
