@@ -246,17 +246,19 @@ export default function ForkPanel() {
 							</span>
 						</span>
 					</FlexItem>
-					<FlexItem>
-						<Button
-							variant="link"
-							isDestructive
-							__next40pxDefaultSize
-							onClick={() => setIsConfirmOpen(true)}
-							disabled={isDiscarding || isConfirmOpen}
-						>
-							Discard Future Revision
-						</Button>
-					</FlexItem>
+					{forkInfo.can_discard !== false && (
+						<FlexItem>
+							<Button
+								variant="link"
+								isDestructive
+								__next40pxDefaultSize
+								onClick={() => setIsConfirmOpen(true)}
+								disabled={isDiscarding || isConfirmOpen}
+							>
+								Discard Future Revision
+							</Button>
+						</FlexItem>
+					)}
 				</Flex>
 			</PluginPostStatusInfo>
 		);

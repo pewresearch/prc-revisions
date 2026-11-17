@@ -77,7 +77,7 @@ All routes are under the `prc-revisions/v1` namespace.
 | `POST`   | `/prc-revisions/v1/toggle/{post_id}/{revision_id}` | `edit_post`                               | Toggles a revision's public status; returns `{ action, version, url }`                                                                          |
 | `POST`   | `/prc-revisions/v1/fork/{post_id}`                 | `edit_post`                               | Creates a fork draft of a published post; returns `{ fork_id, edit_url }`. Returns 409 if an active fork already exists                         |
 | `DELETE` | `/prc-revisions/v1/fork/{post_id}`                 | `edit_post` (+ `delete_post` on the fork) | Trashes a pending future revision. Accepts parent or fork ID; returns `{ trashed, fork_id, parent_id }`. Does not merge content into the parent |
-| `GET`    | `/prc-revisions/v1/fork-info/{post_id}`            | `edit_post`                               | Returns fork relationship info: role (`parent`, `fork`, or `none`) and related IDs/URLs                                                         |
+| `GET`    | `/prc-revisions/v1/fork-info/{post_id}`            | `edit_post`                               | Returns fork relationship info: role (`parent`, `fork`, or `none`), related IDs/URLs, and `can_discard` (see `prc_revisions_can_discard_fork`)  |
 
 ### Example: toggle a revision public
 

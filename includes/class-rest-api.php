@@ -354,6 +354,17 @@ class Rest_API {
 		$post_id = $request->get_param( 'post_id' );
 		$info    = Future_Revisions::get_fork_info( $post_id );
 
+		/**
+		 * Filters whether the current user may discard this post's future revision.
+		 *
+		 * The editor hides the Discard button when this returns false. It does not
+		 * replace the capability check on the route.
+		 *
+		 * @param bool $can     Whether the user may discard. Default true.
+		 * @param int  $post_id Post ID the info was requested for.
+		 */
+		$info['can_discard'] = (bool) apply_filters( 'prc_revisions_can_discard_fork', true, (int) $post_id );
+
 		return new WP_REST_Response( $info, 200 );
 	}
 
